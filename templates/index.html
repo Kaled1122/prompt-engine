@@ -45,7 +45,6 @@
   </style>
 
   <script>
-    // ---- SUGGEST MODE ----
     async function suggestPrompt() {
       const idea = document.getElementById("idea").value;
 
@@ -59,7 +58,6 @@
       document.getElementById("suggested_output").innerText = data.result;
     }
 
-    // ---- GENERATE MODE ----
     async function generatePrompt() {
       const payload = {
         ptype: document.getElementById("ptype").value,
@@ -88,7 +86,7 @@
 
 <div class="section">
   <h2>🔍 Suggest the Best Prompt Type</h2>
-  <textarea id="idea" placeholder="Describe your idea.."></textarea>
+  <textarea id="idea" placeholder="Describe your idea..."></textarea>
   <button onclick="suggestPrompt()">Suggest Prompt Type</button>
   <div class="output" id="suggested_output"></div>
 </div>
