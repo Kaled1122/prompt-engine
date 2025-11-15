@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify, render_template
-import openai
+from flask_cors import CORS
+from openai import OpenAI
 import os
 
 app = Flask(__name__)
+CORS(app)
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# OpenAI client
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
+# MASTER ENGINE FOR SUGGEST MODE
 MASTER_ENGINE = """
 You are the Prompt Recommendation & Generation Engine.
 
@@ -31,7 +34,7 @@ Your job:
 3. Explain why (1 sentence).
 4. Generate the final optimized prompt.
 
-Your output MUST follow this exact format:
+FORMAT YOUR OUTPUT EXACTLY LIKE THIS:
 
 Recommended Prompt Type(s):
 <type>
@@ -43,29 +46,45 @@ Final Generated Prompt:
 <prompt>
 """
 
-
+# GENERATOR ENGINE
 PROMPT_GENERATOR = """
 You are the Prompt Builder AI.
-Generate a perfect {ptype} prompt based on the user's goal.
 
-User Goal: {goal}
-Examples: {examples}
-Context: {context}
-Constraints: {constraints}
-Tools: {tools}
+Generate a perfect {ptype} prompt.
 
-Output ONLY the final prompt. No explanation.
+User Goal:
+{goal}
+
+Examples:
+{examples}
+
+Context:
+{context}
+
+Constraints:
+{constraints}
+
+Tools:
+{tools}
+
+OUTPUT:
+Only the final prompt.
+No commentary.
 """
 
 
-def chat(prompt):
-    response = openai.ChatCompletion.create(
+# ---- OPENAI WRAPPER ----
+def chat(message):
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[
+            {"role": "user", "content": message}
+        ]
     )
-    return response.choices[0].message["content"]
+    return response.choices[0].message.content
 
 
+# ---- ROUTES ----
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -83,6 +102,7 @@ def suggest():
 @app.route("/generate", methods=["POST"])
 def generate():
     data = request.json
+
     ptype = data.get("ptype", "")
     goal = data.get("goal", "")
     examples = data.get("examples", "")
@@ -103,5 +123,6 @@ def generate():
     return jsonify({"result": final})
 
 
+# ---- RUN ----
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
