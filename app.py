@@ -1,15 +1,19 @@
+import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from openai import OpenAI
-import os
 
 app = Flask(__name__)
 CORS(app)
 
-# OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Load API key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-# MASTER ENGINE FOR SUGGEST MODE
+
+# ------------------------------
+# PROMPT SUGGESTION ENGINE
+# ------------------------------
 MASTER_ENGINE = """
 You are the Prompt Recommendation & Generation Engine.
 
@@ -46,7 +50,10 @@ Final Generated Prompt:
 <prompt>
 """
 
-# GENERATOR ENGINE
+
+# ------------------------------
+# PROMPT GENERATION ENGINE
+# ------------------------------
 PROMPT_GENERATOR = """
 You are the Prompt Builder AI.
 
@@ -73,7 +80,9 @@ No commentary.
 """
 
 
-# ---- OPENAI WRAPPER ----
+# ------------------------------
+# OpenAI Chat Wrapper (New API)
+# ------------------------------
 def chat(message):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
@@ -84,7 +93,9 @@ def chat(message):
     return response.choices[0].message.content
 
 
-# ---- ROUTES ----
+# ------------------------------
+# ROUTES
+# ------------------------------
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -123,6 +134,9 @@ def generate():
     return jsonify({"result": final})
 
 
-# ---- RUN ----
+# ------------------------------
+# RUN SERVER — RAILWAY SAFE
+# ------------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    port = int(os.getenv("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
