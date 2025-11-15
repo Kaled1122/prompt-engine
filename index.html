@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Prompt Builder</title>
+  <style>
+    body { font-family: Arial; margin: 40px; background: #fafafa; }
+    h1 { font-size: 32px; }
+    textarea, select, input { width: 100%; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ccc; }
+    button { padding: 14px; background: black; color: white; width: 100%; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; }
+    button:hover { background: #333; }
+    .section { background: white; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .output { background: #f0f0f0; padding: 20px; white-space: pre-wrap; border-radius: 8px; margin-top: 15px; }
+  </style>
+
+  <script>
+    async function suggestPrompt() {
+      const idea = document.getElementById("idea").value;
+
+      const res = await fetch("/suggest", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ idea })
+      });
+
+      const data = await res.json();
+      document.getElementById("suggested_output").innerText = data.result;
+    }
+
+    async function generatePrompt() {
+      const payload = {
+        ptype: document.getElementById("ptype").value,
+        goal: document.getElementById("goal").value,
+        examples: document.getElementById("examples").value,
+        context: document.getElementById("context").value,
+        constraints: document.getElementById("constraints").value,
+        tools: document.getElementById("tools").value
+      };
+
+      const res = await fetch("/generate", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      document.getElementById("generated_output").innerText = data.result;
+    }
+  </script>
+</head>
+
+<body>
+
+<h1>AI Prompt Builder</h1>
+
+<div class="section">
+  <h2>🔍 Suggest the Best Prompt Type</h2>
+  <textarea id="idea" placeholder="Describe what you want to do..."></textarea>
+  <button onclick="suggestPrompt()">Suggest Prompt Type</button>
+  <div class="output" id="suggested_output"></div>
+</div>
+
+<div class="section">
+  <h2>🛠 Generate a Prompt</h2>
+
+  <label>Prompt Type:</label>
+  <select id="ptype">
+    <option>System</option>
+    <option>Instruction</option>
+    <option>Zero-Shot</option>
+    <option>Few-Shot</option>
+    <option>Context / RAG</option>
+    <option>Chain-of-Thought</option>
+    <option>Self-Consistency</option>
+    <option>Self-Critique</option>
+    <option>ReAct</option>
+    <option>Tool-Use</option>
+    <option>Planning</option>
+    <option>Verification</option>
+    <option>Template-Based</option>
+    <option>Constraint-Based</option>
+    <option>Agentic</option>
+  </select>
+
+  <label>Goal:</label>
+  <textarea id="goal"></textarea>
+
+  <label>Examples (optional):</label>
+  <textarea id="examples"></textarea>
+
+  <label>Context (optional):</label>
+  <textarea id="context"></textarea>
+
+  <label>Constraints (optional):</label>
+  <textarea id="constraints"></textarea>
+
+  <label>Tools (optional):</label>
+  <textarea id="tools"></textarea>
+
+  <button onclick="generatePrompt()">Generate Prompt</button>
+  <div class="output" id="generated_output"></div>
+</div>
+
+</body>
+</html>
